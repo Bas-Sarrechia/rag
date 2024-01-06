@@ -1,0 +1,22 @@
+POST localhost:8080
+Content-Type: application/json
+
+{
+  "interaction": "what is the packaging used in dutral?"
+}
+
+###
+DELETE localhost:8080/all
+###
+GET localhost:8080/test
+###
+POST localhost:8080/pdf
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="tds.pdf"
+Content-Type: application/pdf
+
+< ./data/tds.pdf
+--WebAppBoundary--
+

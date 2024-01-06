@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '21'
+}
+
+ext {
+    langchainversion = '0.25.0'
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.apache.pdfbox:pdfbox:3.0.1"
+    implementation "dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2:$langchainversion"
+    implementation "dev.langchain4j:langchain4j-chroma:$langchainversion"
+    implementation "dev.langchain4j:langchain4j-local-ai:$langchainversion"
+    implementation "io.github.amikos-tech:chromadb-java-client:0.1.2"
+    implementation "dev.langchain4j:langchain4j:$langchainversion"
+    implementation "dev.langchain4j:langchain4j-core:$langchainversion"
+    implementation "dev.langchain4j:langchain4j-ollama:$langchainversion"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation 'org.openpnp:opencv:4.9.0-0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

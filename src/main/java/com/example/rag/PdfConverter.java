@@ -1,13 +1,13 @@
 package com.example.rag;
 
+import com.azure.ai.formrecognizer.documentanalysis.DocumentAnalysisClient;
+import com.azure.ai.formrecognizer.documentanalysis.models.AnalyzeResult;
+import com.azure.ai.formrecognizer.documentanalysis.models.DocumentTable;
+import com.azure.ai.formrecognizer.documentanalysis.models.OperationResult;
+import com.azure.core.util.BinaryData;
+import com.azure.core.util.polling.SyncPoller;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.*;
-import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,28 +15,40 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 @Service
 public class PdfConverter {
-    private static void addBoundingBoxToText(PDDocument document, PDPage page, String searchText) throws IOException {
-        PDPageContentStream contentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true);
+    private final DocumentAnalysisClient documentAnalysisClient;
 
-        contentStream.beginText();
-        contentStream.newLineAtOffset(100, 700); // Adjust the offset based on your needs
-        PDType1Font font = new PDType1Font(Standard14Fonts.FontName.COURIER);
-        contentStream.setFont(font, 1);
-        contentStream.showText(searchText);
-        contentStream.endText();
+    public PdfConverter(DocumentAnalysisClient documentAnalysisClient) {
+        this.documentAnalysisClient = documentAnalysisClient;
+    }
 
-        // Add a bounding box around the text
-        contentStream.addRect(100, 700 - 100, 100, 100);
-        contentStream.setLineWidth(1f);
-        contentStream.stroke();
+    public String parsePdfByAzureService(MultipartFile file) throws IOException {
+        String modelId = "prebuilt-layout";
+        BinaryData documentBytes = BinaryData.fromByteBuffer(ByteBuffer.wrap(file.getBytes()));
+        SyncPoller<OperationResult, AnalyzeResult> analyzeLayoutResultPoller =
+                documentAnalysisClient.beginAnalyzeDocument(modelId, documentBytes);
 
-        // Close the content stream
-        contentStream.close();
+        DocumentTable table = analyzeLayoutResultPoller.getFinalResult().getTables().getFirst();
+
+        int columns = table.getColumnCount();
+        StringBuilder builder = new StringBuilder();
+        for (int row = 0; row < table.getRowCount() - 1; row++) {
+            for (int column = 0; column <= columns; column++) {
+                builder.append(table.getCells().get((column * row) % columns).getContent());
+                builder.append(" ");
+                builder.append(table.getCells().get((column * row) + columns).getContent());
+                builder.append(";");
+            }
+            builder.append("\n");
+        }
+
+        return analyzeLayoutResultPoller.getFinalResult().getContent();
+
     }
 
     public PdfData process(MultipartFile file) {
@@ -59,7 +71,6 @@ public class PdfConverter {
             for (int page = 0; page < document.getNumberOfPages(); ++page) {
                 PDFTextStripper stripper = new PDFTextStripper();
                 result.append(stripper.getText(document));
-                addBoundingBoxToText(document, document.getPage(page), "environmental");
             }
             document.save("output.pdf");
         } catch (IOException e) {

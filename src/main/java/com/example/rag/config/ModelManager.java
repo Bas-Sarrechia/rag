@@ -1,5 +1,6 @@
 package com.example.rag.config;
 
+import dev.langchain4j.model.azure.AzureOpenAiChatModel;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.AllMiniLmL6V2EmbeddingModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -19,10 +20,18 @@ public class ModelManager {
 
     @Bean
     public ChatLanguageModel provideChatModel() {
+
+//        return AzureOpenAiChatModel.builder()
+//                .baseUrl("<URL>")
+//                .apiKey("<API KEY>")
+//                .apiVersion("<X>")
+//                .build();
+
         return OllamaChatModel.builder()
                 .baseUrl("http://localhost:11434")
-                .modelName("mistral")
+                .modelName("mixtral")
                 .timeout(Duration.ofSeconds(30))
                 .build();
+
     }
 }

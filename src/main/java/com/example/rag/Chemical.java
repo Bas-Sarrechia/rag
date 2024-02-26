@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-public record Chemical(String productName, String chemicalName, List<String> functions, String bananaColor) {
+public record Chemical(String productName,
+                       String chemicalName,
+                       String producer,
+                       List<String> industries,
+                       List<String> functions) {
     public String toJson() {
         try {
             return new ObjectMapper().writeValueAsString(this);

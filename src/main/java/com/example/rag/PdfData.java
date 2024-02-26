@@ -4,7 +4,7 @@ import dev.langchain4j.data.document.Metadata;
 
 import java.util.Objects;
 
-public final class PdfData implements Embeddable {
+public final class PdfData {
     private final String fileName;
     private final String content;
     private Chemical chemical;
@@ -21,24 +21,6 @@ public final class PdfData implements Embeddable {
     @Override
     public int hashCode() {
         return Objects.hash(content);
-    }
-
-    @Override
-    public String getEmbeddableContent() {
-        return this.content;
-    }
-
-    @Override
-    public String getRepeatableContent() {
-        return this.chemical.toString();
-    }
-
-    @Override
-    public Metadata getMetaData() {
-        Metadata metadata = new Metadata();
-        metadata.add("chemical", this.chemical.toJson());
-        metadata.add("file", this.fileName);
-        return metadata;
     }
 
     public void setChemical(Chemical chemical) {

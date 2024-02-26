@@ -1,3 +1,4 @@
-chroma:
-  uri: http://localhost:8000
-
+azure:
+  document:
+    endpoint: ENDPOINT
+    key: RAVAGO_KEY
